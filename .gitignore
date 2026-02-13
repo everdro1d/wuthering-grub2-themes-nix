@@ -2,3 +2,4 @@ backgrounds/background.svg
 backgrounds/render-backgrounds.sh
 release/*.xz
 origin
+qemu-previews

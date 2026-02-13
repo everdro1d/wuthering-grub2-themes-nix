@@ -61,7 +61,28 @@ sudo ./install.sh -r -t yinlin
  - If any issues occur, report then to the [issue](issues) page
 
 ## Preview:
-![preview](preview.jpg?raw=true)
+
+Generated from real boot simulation (`QEMU + UEFI + GRUB`), then compressed for GitHub display.
+
+### 2560x1440
+
+| changli | jinxi | jiyan | yinlin |
+|---|---|---|---|
+| ![changli 2560x1440](previews/preview-qemu-changli-2560x1440.jpg) | ![jinxi 2560x1440](previews/preview-qemu-jinxi-2560x1440.jpg) | ![jiyan 2560x1440](previews/preview-qemu-jiyan-2560x1440.jpg) | ![yinlin 2560x1440](previews/preview-qemu-yinlin-2560x1440.jpg) |
+
+| anke | weilinai | kakaluo | jianxin |
+|---|---|---|---|
+| ![anke 2560x1440](previews/preview-qemu-anke-2560x1440.jpg) | ![weilinai 2560x1440](previews/preview-qemu-weilinai-2560x1440.jpg) | ![kakaluo 2560x1440](previews/preview-qemu-kakaluo-2560x1440.jpg) | ![jianxin 2560x1440](previews/preview-qemu-jianxin-2560x1440.jpg) |
+
+### 2560x1600
+
+| qianxiao | cartethyia | younuo |
+|---|---|---|
+| ![qianxiao 2560x1600](previews/preview-qemu-qianxiao-2560x1600.jpg) | ![cartethyia 2560x1600](previews/preview-qemu-cartethyia-2560x1600.jpg) | ![younuo 2560x1600](previews/preview-qemu-younuo-2560x1600.jpg) |
+
+| aemeath | lynae | mornye |
+|---|---|---|
+| ![aemeath 2560x1600](previews/preview-qemu-aemeath-2560x1600.jpg) | ![lynae 2560x1600](previews/preview-qemu-lynae-2560x1600.jpg) | ![mornye 2560x1600](previews/preview-qemu-mornye-2560x1600.jpg) |
 
 ## Documents
 
