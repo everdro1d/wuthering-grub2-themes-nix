@@ -10,7 +10,7 @@ THEME_NAME=Wuthering
 REO_DIR="$(cd $(dirname $0) && pwd)"
 
 SCREEN_VARIANTS=('1080p' '2k' '4k')
-THEME_VARIANTS=('changli' 'jinxi' 'jiyan' 'yinlin' 'anke' 'weilinai' 'kakaluo' 'jianxin' 'qianxiao' 'cartethyia')
+THEME_VARIANTS=('changli' 'jinxi' 'jiyan' 'yinlin' 'anke' 'weilinai' 'kakaluo' 'jianxin' 'qianxiao' 'cartethyia' 'younuo')
 
 screens=()
 themes=()
@@ -62,7 +62,7 @@ cat << EOF
 Usage: $0 [OPTION]...
 
 OPTIONS:
-  -t, --theme     Background theme variant(s) [changli|jinxi|jiyan|yinlin|anke|weilinai|kakaluo|jianxin|qianxiao|cartethyia] (default is changli)
+  -t, --theme     Background theme variant(s) [changli|jinxi|jiyan|yinlin|anke|weilinai|kakaluo|jianxin|qianxiao|cartethyia|younuo] (default is changli)
   -s, --screen    Screen display variant(s) [1080p|2k|4k] (default is 1080p)
 
   -h, --help      Show this help
@@ -155,6 +155,10 @@ while [[ $# -gt 0 ]]; do
             ;;
           cartethyia)
             themes+=("${THEME_VARIANTS[9]}")
+            shift
+            ;;
+          younuo)
+            themes+=("${THEME_VARIANTS[10]}")
             shift
             ;;
           -*)
