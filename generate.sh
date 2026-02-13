@@ -56,6 +56,24 @@ function has_command() {
   command -v $1 &> /dev/null #with "&>", all output will be redirected.
 }
 
+# Normalize grub background to baseline JPEG for compatibility.
+normalize_background_jpeg() {
+  local bg_file="${1}"
+
+  if [[ ! -f "${bg_file}" ]]; then
+    prompt -w "\n Background image '${bg_file}' was not found, skipping JPEG normalization."
+    return 0
+  fi
+
+  if has_command magick; then
+    magick "${bg_file}" -auto-orient -colorspace sRGB -interlace none -strip -sampling-factor 4:2:0 -quality 100 "${bg_file}"
+  elif has_command convert; then
+    convert "${bg_file}" -auto-orient -colorspace sRGB -interlace none -strip -sampling-factor 4:2:0 -quality 100 "${bg_file}"
+  else
+    prompt -w "\n ImageMagick not found, skipping JPEG normalization for '${bg_file}'."
+  fi
+}
+
 usage() {
 cat << EOF
 
@@ -97,8 +115,8 @@ generate() {
   if [[ -f "${REO_DIR}/background.jpg" ]]; then
     prompt -w "\n Using custom background.jpg as grub background image..."
     cp -a --no-preserve=ownership "${REO_DIR}/background.jpg" "${THEME_DIR}/background.jpg"
-    convert -auto-orient "${THEME_DIR}/background.jpg" "${THEME_DIR}/background.jpg"
   fi
+  normalize_background_jpeg "${THEME_DIR}/background.jpg"
 
   prompt -s "\n Finished ..."
 }
