@@ -13,7 +13,7 @@ GRUB_DIR="/usr/share/grub/themes"
 REO_DIR="$(cd $(dirname $0) && pwd)"
 
 SCREEN_VARIANTS=('1080p' '2k' '4k')
-THEME_VARIANTS=('changli' 'jinxi' 'jiyan' 'yinlin' 'anke' 'weilinai' 'kakaluo' 'jianxin' 'qianxiao' 'cartethyia' 'younuo' 'aemeath')
+THEME_VARIANTS=('changli' 'jinxi' 'jiyan' 'yinlin' 'anke' 'weilinai' 'kakaluo' 'jianxin' 'qianxiao' 'cartethyia' 'younuo' 'aemeath' 'lynae')
 
 screens=()
 themes=()
@@ -83,9 +83,9 @@ cat << EOF
 Usage: $0 [OPTION]...
 
 OPTIONS:
-  -t, --theme     Background theme variant(s) [changli|jinxi|jiyan|yinlin|anke|weilinai|kakaluo|jianxin|qianxiao|cartethyia|younuo|aemeath] (default is changli)
+  -t, --theme     Background theme variant(s) [changli|jinxi|jiyan|yinlin|anke|weilinai|kakaluo|jianxin|qianxiao|cartethyia|younuo|aemeath|lynae] (default is changli)
   -s, --screen    Screen display variant(s)   [1080p|2k|4k] (default is 1080p)
-  -r, --remove    Remove/Uninstall theme      [changli|jinxi|jiyan|yinlin|anke|weilinai|kakaluo|jianxin|qianxiao|cartethyia|younuo|aemeath] (must add theme name option, default is changli)
+  -r, --remove    Remove/Uninstall theme      [changli|jinxi|jiyan|yinlin|anke|weilinai|kakaluo|jianxin|qianxiao|cartethyia|younuo|aemeath|lynae] (must add theme name option, default is changli)
   -b, --boot      Install theme into '/boot/grub' or '/boot/grub2'
   -h, --help      Show this help
 
@@ -288,7 +288,8 @@ run_dialog() {
       9 "Qianxiao Theme" off  \
       10 "Cartethyia Theme" off  \
       11 "Younuo Theme" off  \
-      12 "Aemeath Theme" off --output-fd 1 )
+      12 "Aemeath Theme" off  \
+      13 "Lynae Theme" off --output-fd 1 )
       case "$tui" in
         1) theme="changli"    ;;
         2) theme="jinxi"      ;;
@@ -302,6 +303,7 @@ run_dialog() {
         10) theme="cartethyia"   ;;
         11) theme="younuo"   ;;
         12) theme="aemeath"   ;;
+        13) theme="lynae"   ;;
         *) operation_canceled ;;
      esac
 
@@ -547,6 +549,10 @@ while [[ $# -gt 0 ]]; do
             themes+=("${THEME_VARIANTS[11]}")
             shift
             ;;
+          lynae)
+            themes+=("${THEME_VARIANTS[12]}")
+            shift
+            ;;
           -*)
             break
             ;;
@@ -617,6 +623,10 @@ while [[ $# -gt 0 ]]; do
             ;;
           aemeath)
             themes+=("${THEME_VARIANTS[11]}")
+            shift
+            ;;
+          lynae)
+            themes+=("${THEME_VARIANTS[12]}")
             shift
             ;;
           -*)
