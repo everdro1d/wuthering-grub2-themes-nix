@@ -6,7 +6,7 @@ Usage:  `sudo ./install.sh [OPTIONS...]`
 
 ```
   -t, --theme     Background theme variant(s) [changli|jinxi|jiyan|yinlin|anke|weilinai|kakaluo|jianxin|qianxiao|cartethyia|younuo|aemeath|lynae|mornye] (default is changli)
-  -s, --screen    Screen display variant(s)   [1080p|2k|4k] (default is 1080p)
+  -s, --screen    Screen display variant(s)   [1080p|2k|4k|auto] (default is 1080p)
   -r, --remove    Remove/Uninstall theme      [changli|jinxi|jiyan|yinlin|anke|weilinai|kakaluo|jianxin|qianxiao|cartethyia|younuo|aemeath|lynae|mornye] (must add theme name option, default is changli)
   -b, --boot      install theme into '/boot/grub' or '/boot/grub2'
   -h, --help      Show this help
@@ -39,19 +39,19 @@ sudo ./install.sh -r -t yinlin
 
  - On the grub screen, press `c` to enter the command line
  - Enter `vbeinfo` or `videoinfo` to check available resolutions
- - Open `/etc/default/grub`, and edit `GRUB_GFXMODE=[height]x[width]x32` to match your resolution
+ - Open `/etc/default/grub`, and edit `GRUB_GFXMODE=[width]x[height],auto` to match your resolution
  - Finally, run `grub-mkconfig -o /boot/grub/grub.cfg` to update your grub config
 
 ### Setting a custom background:
 
  - Make sure you have `imagemagick` installed, or at least something that provides `convert`
- - Find the resolution of your display, and make sure your background matches the resolution
+ - You can use `-s auto` to auto-detect display resolution and center-crop background to fit
+ - If you use fixed modes (`1080p`, `2k`, `4k`), background should match that target resolution
    - 1920x1080 >> 1080p
    - 2560x1440 >> 2k
    - 3840x2160 >> 4k
  - Place your custom background inside the root of the project, and name it `background.jpg`
- - Run the installer like normal, but with -s `[YOUR_RESOLUTION]` and -t `[THEME]` and -i `[ICON]`
-   - Make sure to replace `[YOUR_RESOLUTION]` with your resolution and `[THEME]` with the theme
+ - Run the installer with `-t [THEME] -s auto` (recommended), or choose a fixed mode with `-s [1080p|2k|4k]`
 
 ## Contributing:
  - If you made changes to icons, or added a new one:

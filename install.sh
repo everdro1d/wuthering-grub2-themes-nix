@@ -12,7 +12,7 @@ THEME_NAME=Wuthering
 GRUB_DIR="/usr/share/grub/themes"
 REO_DIR="$(cd $(dirname $0) && pwd)"
 
-SCREEN_VARIANTS=('1080p' '2k' '4k')
+SCREEN_VARIANTS=('1080p' '2k' '4k' 'auto')
 THEME_VARIANTS=('changli' 'jinxi' 'jiyan' 'yinlin' 'anke' 'weilinai' 'kakaluo' 'jianxin' 'qianxiao' 'cartethyia' 'younuo' 'aemeath' 'lynae' 'mornye')
 
 screens=()
@@ -62,18 +62,106 @@ function has_command() {
 # Normalize grub background to baseline JPEG for compatibility.
 normalize_background_jpeg() {
   local bg_file="${1}"
+  local target_resolution="${2:-}"
+  local image_args=(
+    -auto-orient
+    -colorspace sRGB
+    -interlace none
+    -strip
+    -sampling-factor 4:2:0
+    -quality 100
+  )
 
   if [[ ! -f "${bg_file}" ]]; then
     prompt -w "\n Background image '${bg_file}' was not found, skipping JPEG normalization."
     return 0
   fi
 
+  if [[ "${target_resolution}" =~ ^[0-9]+x[0-9]+$ ]]; then
+    image_args=(
+      -auto-orient
+      -colorspace sRGB
+      -strip
+      -filter Lanczos
+      -resize "${target_resolution}^"
+      -gravity center
+      -extent "${target_resolution}"
+      -interlace none
+      -sampling-factor 4:2:0
+      -quality 100
+    )
+  fi
+
   if has_command magick; then
-    magick "${bg_file}" -auto-orient -colorspace sRGB -interlace none -strip -sampling-factor 4:2:0 -quality 100 "${bg_file}"
+    magick "${bg_file}" "${image_args[@]}" "${bg_file}"
   elif has_command convert; then
-    convert "${bg_file}" -auto-orient -colorspace sRGB -interlace none -strip -sampling-factor 4:2:0 -quality 100 "${bg_file}"
+    convert "${bg_file}" "${image_args[@]}" "${bg_file}"
   else
     prompt -w "\n ImageMagick not found, skipping JPEG normalization for '${bg_file}'."
+  fi
+}
+
+resolution_for_screen() {
+  local screen="${1}"
+  case "${screen}" in
+    1080p) echo "1920x1080" ;;
+    2k) echo "2560x1440" ;;
+    4k) echo "3840x2160" ;;
+    *) echo "" ;;
+  esac
+}
+
+pick_screen_variant_for_resolution() {
+  local resolution="${1}"
+  local width=0
+  local height=0
+
+  if [[ "${resolution}" =~ ^([0-9]+)x([0-9]+)$ ]]; then
+    width="${BASH_REMATCH[1]}"
+    height="${BASH_REMATCH[2]}"
+  fi
+
+  if (( width >= 3200 || height >= 1800 )); then
+    echo "4k"
+  elif (( width >= 2400 || height >= 1350 )); then
+    echo "2k"
+  else
+    echo "1080p"
+  fi
+}
+
+detect_display_resolution() {
+  local resolution=""
+  local connector=""
+
+  if has_command xrandr && [[ -n "${DISPLAY:-}" ]]; then
+    resolution="$(xrandr --current 2>/dev/null | awk '/\*/ {print $1; exit}')"
+  fi
+
+  if [[ ! "${resolution}" =~ ^[0-9]+x[0-9]+$ ]]; then
+    for status_file in /sys/class/drm/*/status; do
+      [[ -r "${status_file}" ]] || continue
+      if [[ "$(cat "${status_file}" 2>/dev/null)" != "connected" ]]; then
+        continue
+      fi
+      connector="${status_file%/status}"
+      if [[ -r "${connector}/modes" ]]; then
+        resolution="$(awk '/^[0-9]+x[0-9]+$/ {print; exit}' "${connector}/modes")"
+      fi
+      if [[ "${resolution}" =~ ^[0-9]+x[0-9]+$ ]]; then
+        break
+      fi
+    done
+  fi
+
+  if [[ ! "${resolution}" =~ ^[0-9]+x[0-9]+$ ]] && [[ -r /sys/class/graphics/fb0/virtual_size ]]; then
+    resolution="$(tr ',' 'x' < /sys/class/graphics/fb0/virtual_size 2>/dev/null)"
+  fi
+
+  if [[ "${resolution}" =~ ^[0-9]+x[0-9]+$ ]]; then
+    echo "${resolution}"
+  else
+    echo ""
   fi
 }
 
@@ -84,7 +172,7 @@ Usage: $0 [OPTION]...
 
 OPTIONS:
   -t, --theme     Background theme variant(s) [changli|jinxi|jiyan|yinlin|anke|weilinai|kakaluo|jianxin|qianxiao|cartethyia|younuo|aemeath|lynae|mornye] (default is changli)
-  -s, --screen    Screen display variant(s)   [1080p|2k|4k] (default is 1080p)
+  -s, --screen    Screen display variant(s)   [1080p|2k|4k|auto] (default is 1080p)
   -r, --remove    Remove/Uninstall theme      [changli|jinxi|jiyan|yinlin|anke|weilinai|kakaluo|jianxin|qianxiao|cartethyia|younuo|aemeath|lynae|mornye] (must add theme name option, default is changli)
   -b, --boot      Install theme into '/boot/grub' or '/boot/grub2'
   -h, --help      Show this help
@@ -95,8 +183,26 @@ EOF
 install() {
   local theme="${1}"
   local screen="${2}"
+  local resolved_screen="${screen}"
+  local detected_resolution=""
+  local target_resolution=""
 
   local THEME_DIR="${GRUB_DIR}/${THEME_NAME}-${theme}"
+
+  if [[ "${screen}" == "auto" ]]; then
+    detected_resolution="$(detect_display_resolution)"
+    if [[ "${detected_resolution}" =~ ^[0-9]+x[0-9]+$ ]]; then
+      resolved_screen="$(pick_screen_variant_for_resolution "${detected_resolution}")"
+      target_resolution="${detected_resolution}"
+      prompt -i "\n Auto-detected display resolution: ${target_resolution}. Using '${resolved_screen}' asset profile."
+    else
+      resolved_screen="1080p"
+      target_resolution="$(resolution_for_screen "${resolved_screen}")"
+      prompt -w "\n Could not auto-detect display resolution, fallback to ${target_resolution} (${resolved_screen})."
+    fi
+  else
+    target_resolution="$(resolution_for_screen "${resolved_screen}")"
+  fi
 
   # Check for root access and proceed if it is present
   if [[ "$UID" -eq "$ROOT_UID" ]]; then
@@ -107,21 +213,21 @@ install() {
     mkdir -p "${THEME_DIR}"
 
     # Copy theme
-    prompt -i "\n Installing Wuthering-${theme} ${screen} ..."
+    prompt -i "\n Installing Wuthering-${theme} ${resolved_screen} ..."
 
     # Don't preserve ownership because the owner will be root, and that causes the script to crash if it is ran from terminal by sudo
     cp -a --no-preserve=ownership "${REO_DIR}/common/"*.pf2 "${THEME_DIR}"
-    cp -a --no-preserve=ownership "${REO_DIR}/config/theme-${screen}.txt" "${THEME_DIR}/theme.txt"
+    cp -a --no-preserve=ownership "${REO_DIR}/config/theme-${resolved_screen}.txt" "${THEME_DIR}/theme.txt"
     cp -a --no-preserve=ownership "${REO_DIR}/backgrounds/background-${theme}.jpg" "${THEME_DIR}/background.jpg"
-    cp -a --no-preserve=ownership "${REO_DIR}/assets/assets-icons/icons-${screen}" "${THEME_DIR}/icons"
-    cp -a --no-preserve=ownership "${REO_DIR}/assets/assets-other/other-${screen}/"*.png "${THEME_DIR}"
+    cp -a --no-preserve=ownership "${REO_DIR}/assets/assets-icons/icons-${resolved_screen}" "${THEME_DIR}/icons"
+    cp -a --no-preserve=ownership "${REO_DIR}/assets/assets-other/other-${resolved_screen}/"*.png "${THEME_DIR}"
 
     # Use custom background.jpg as grub background image
     if [[ -f "${REO_DIR}/background.jpg" ]]; then
       prompt -w "\n Using custom background.jpg as grub background image..."
       cp -a --no-preserve=ownership "${REO_DIR}/background.jpg" "${THEME_DIR}/background.jpg"
     fi
-    normalize_background_jpeg "${THEME_DIR}/background.jpg"
+    normalize_background_jpeg "${THEME_DIR}/background.jpg" "${target_resolution}"
 
     # Set theme
     prompt -i "\n Setting Wuthering as default..."
@@ -172,13 +278,7 @@ install() {
     fi
 
     # Make sure the right resolution for grub is set
-    if [[ ${screen} == '1080p' ]]; then
-      gfxmode="GRUB_GFXMODE=1920x1080,auto"
-    elif [[ ${screen} == '4k' ]]; then
-      gfxmode="GRUB_GFXMODE=3840x2160,auto"
-    elif [[ ${screen} == '2k' ]]; then
-      gfxmode="GRUB_GFXMODE=2560x1440,auto"
-    fi
+    gfxmode="GRUB_GFXMODE=${target_resolution},auto"
 
     if grep "GRUB_GFXMODE=" /etc/default/grub 2>&1 >/dev/null; then
       #Replace GRUB_GFXMODE
@@ -311,13 +411,15 @@ run_dialog() {
 
     tui=$(dialog --backtitle ${Project_Name} \
     --radiolist "Choose your Display Resolution : " 15 40 5 \
-      1 "1080p (1920x1080)" on  \
-      2 "2k (2560x1440)" off \
-      3 "4k (3840x2160)" off --output-fd 1 )
+      1 "Auto detect (recommended)" on  \
+      2 "1080p (1920x1080)" off  \
+      3 "2k (2560x1440)" off \
+      4 "4k (3840x2160)" off --output-fd 1 )
       case "$tui" in
-        1) screen="1080p"       ;;
-        2) screen="2k"          ;;
-        3) screen="4k"          ;;
+        1) screen="auto"        ;;
+        2) screen="1080p"       ;;
+        3) screen="2k"          ;;
+        4) screen="4k"          ;;
         *) operation_canceled   ;;
      esac
 
@@ -664,6 +766,10 @@ while [[ $# -gt 0 ]]; do
             ;;
           4k)
             screens+=("${SCREEN_VARIANTS[2]}")
+            shift
+            ;;
+          auto)
+            screens+=("${SCREEN_VARIANTS[3]}")
             shift
             ;;
           -*)
