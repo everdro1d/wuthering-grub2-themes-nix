@@ -22,7 +22,8 @@ Use either:
 ```nix
 { inputs, pkgs, ... }:
 let
-  themePkg = inputs.wuthering-grub2-themes.grubThemes.${pkgs.system}.changli."1920x1200";
+  system = pkgs.stdenv.hostPlatform.system;
+  themePkg = inputs.wuthering-grub2-themes.grubThemes.${system}.changli."1920x1200";
 in {
   boot.loader.grub = {
     enable = true;
