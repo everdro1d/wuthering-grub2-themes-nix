@@ -27,11 +27,13 @@ let
 in {
   boot.loader.grub = {
     enable = true;
-    theme = "${themePkg}/theme.txt";
-    splashImage = "${themePkg}/background.jpg";
+    # Pass the theme directory/package, not theme.txt.
+    theme = themePkg;
   };
 }
 ```
+
+Using `"${themePkg}/theme.txt"` can produce GRUB path errors such as `not a directory`.
 
 > No Home Manager integration and no NixOS module are provided.
 
