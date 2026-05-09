@@ -27,13 +27,14 @@ let
 in {
   boot.loader.grub = {
     enable = true;
-    # Pass the theme directory/package, not theme.txt.
+    # Pass the theme package directory, not the theme.txt file path.
     theme = themePkg;
   };
 }
 ```
 
-Using `"${themePkg}/theme.txt"` can produce GRUB path errors such as `not a directory`.
+Using `"${themePkg}/theme.txt"` can produce GRUB boot-time path errors such as
+`error: not a directory` and `error: invalid argument`.
 
 > No Home Manager integration and no NixOS module are provided.
 
