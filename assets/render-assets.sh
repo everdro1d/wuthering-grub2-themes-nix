@@ -16,6 +16,9 @@ fi
 if [[ "$2" == "1080p" ]]; then
   ASSETS_DIR="assets-$EXPORT_TYPE/$EXPORT_TYPE-1080p"
   EXPORT_DPI="96"
+elif [[ "$2" == "1920x1200" ]]; then
+  ASSETS_DIR="assets-$EXPORT_TYPE/$EXPORT_TYPE-1920x1200"
+  EXPORT_DPI="96"
 elif [[ "$2" == "2k" ]] || [[ "$2" == "2K" ]]; then
   ASSETS_DIR="assets-$EXPORT_TYPE/$EXPORT_TYPE-2k"
   EXPORT_DPI="144"
@@ -23,7 +26,7 @@ elif [[ "$2" == "4k" ]] || [[ "$2" == "4K" ]]; then
   ASSETS_DIR="assets-$EXPORT_TYPE/$EXPORT_TYPE-4k"
   EXPORT_DPI="192"
 else
-  echo "Please use either '1080p', '2k' or '4k'"
+  echo "Please use either '1080p', '1920x1200', '2k' or '4k'"
   exit 1
 fi
 

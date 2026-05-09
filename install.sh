@@ -12,7 +12,7 @@ THEME_NAME=Wuthering
 GRUB_DIR="/usr/share/grub/themes"
 REO_DIR="$(cd $(dirname $0) && pwd)"
 
-SCREEN_VARIANTS=('1080p' '2k' '4k' 'auto')
+SCREEN_VARIANTS=('1080p' '1920x1200' '2k' '4k' 'auto')
 THEME_VARIANTS=('changli' 'jinxi' 'jiyan' 'yinlin' 'anke' 'weilinai' 'kakaluo' 'jianxin' 'qianxiao' 'cartethyia' 'younuo' 'aemeath' 'lynae' 'mornye')
 
 screens=()
@@ -105,6 +105,7 @@ resolution_for_screen() {
   local screen="${1}"
   case "${screen}" in
     1080p) echo "1920x1080" ;;
+    1920x1200) echo "1920x1200" ;;
     2k) echo "2560x1440" ;;
     4k) echo "3840x2160" ;;
     *) echo "" ;;
@@ -121,7 +122,9 @@ pick_screen_variant_for_resolution() {
     height="${BASH_REMATCH[2]}"
   fi
 
-  if (( width >= 3200 || height >= 1800 )); then
+  if (( width == 1920 && height == 1200 )); then
+    echo "1920x1200"
+  elif (( width >= 3200 || height >= 1800 )); then
     echo "4k"
   elif (( width >= 2400 || height >= 1350 )); then
     echo "2k"
@@ -172,7 +175,7 @@ Usage: $0 [OPTION]...
 
 OPTIONS:
   -t, --theme     Background theme variant(s) [changli|jinxi|jiyan|yinlin|anke|weilinai|kakaluo|jianxin|qianxiao|cartethyia|younuo|aemeath|lynae|mornye] (default is changli)
-  -s, --screen    Screen display variant(s)   [1080p|2k|4k|auto] (default is 1080p)
+  -s, --screen    Screen display variant(s)   [1080p|1920x1200|2k|4k|auto] (default is 1080p)
   -r, --remove    Remove/Uninstall theme      [changli|jinxi|jiyan|yinlin|anke|weilinai|kakaluo|jianxin|qianxiao|cartethyia|younuo|aemeath|lynae|mornye] (must add theme name option, default is changli)
   -b, --boot      Install theme into '/boot/grub' or '/boot/grub2'
   -h, --help      Show this help
@@ -410,16 +413,18 @@ run_dialog() {
      esac
 
     tui=$(dialog --backtitle ${Project_Name} \
-    --radiolist "Choose your Display Resolution : " 15 40 5 \
+    --radiolist "Choose your Display Resolution : " 16 46 6 \
       1 "Auto detect (recommended)" on  \
       2 "1080p (1920x1080)" off  \
-      3 "2k (2560x1440)" off \
-      4 "4k (3840x2160)" off --output-fd 1 )
+      3 "1920x1200" off \
+      4 "2k (2560x1440)" off \
+      5 "4k (3840x2160)" off --output-fd 1 )
       case "$tui" in
         1) screen="auto"        ;;
         2) screen="1080p"       ;;
-        3) screen="2k"          ;;
-        4) screen="4k"          ;;
+        3) screen="1920x1200"   ;;
+        4) screen="2k"          ;;
+        5) screen="4k"          ;;
         *) operation_canceled   ;;
      esac
 
@@ -760,16 +765,20 @@ while [[ $# -gt 0 ]]; do
             screens+=("${SCREEN_VARIANTS[0]}")
             shift
             ;;
-          2k)
+          1920x1200)
             screens+=("${SCREEN_VARIANTS[1]}")
             shift
             ;;
-          4k)
+          2k)
             screens+=("${SCREEN_VARIANTS[2]}")
             shift
             ;;
-          auto)
+          4k)
             screens+=("${SCREEN_VARIANTS[3]}")
+            shift
+            ;;
+          auto)
+            screens+=("${SCREEN_VARIANTS[4]}")
             shift
             ;;
           -*)
