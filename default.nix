@@ -1,5 +1,6 @@
 { stdenvNoCC
 , lib
+, imagemagick
 , theme
 , screen
 }:
@@ -26,17 +27,29 @@ stdenvNoCC.mkDerivation {
 
   dontConfigure = true;
   dontBuild = true;
+  nativeBuildInputs = [ imagemagick ];
 
   installPhase = ''
     runHook preInstall
 
-    mkdir -p "$out/icons"
+    install -d -m0755 "$out/icons"
 
-    cp common/*.pf2 "$out/"
-    cp "config/theme-${screen}.txt" "$out/theme.txt"
-    cp "backgrounds/background-${theme}.jpg" "$out/background.jpg"
+    install -m0644 common/*.pf2 "$out/"
+    install -m0644 "config/theme-${screen}.txt" "$out/theme.txt"
+    install -m0644 "backgrounds/background-${theme}.jpg" "$out/background.jpg"
     cp -r "assets/assets-icons/icons-${screen}/." "$out/icons/"
-    cp "assets/assets-other/other-${screen}/"*.png "$out/"
+    chmod -R u=rwX,go=rX "$out/icons"
+    install -m0644 "assets/assets-other/other-${screen}/"*.png "$out/"
+
+    # Match script install behavior: normalize JPEG for GRUB compatibility.
+    magick "$out/background.jpg" \
+      -auto-orient \
+      -colorspace sRGB \
+      -interlace none \
+      -strip \
+      -sampling-factor 4:2:0 \
+      -quality 100 \
+      "$out/background.jpg"
 
     runHook postInstall
   '';
