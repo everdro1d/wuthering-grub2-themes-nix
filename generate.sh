@@ -9,7 +9,7 @@ readonly MAX_DELAY=20                               # max delay for user to ente
 THEME_NAME=Wuthering
 REO_DIR="$(cd $(dirname $0) && pwd)"
 
-SCREEN_VARIANTS=('1080p' '2k' '4k')
+SCREEN_VARIANTS=('1080p' '1920x1200' '2k' '4k')
 THEME_VARIANTS=('changli' 'jinxi' 'jiyan' 'yinlin' 'anke' 'weilinai' 'kakaluo' 'jianxin' 'qianxiao' 'cartethyia' 'younuo' 'aemeath' 'lynae' 'mornye')
 
 screens=()
@@ -81,7 +81,7 @@ Usage: $0 [OPTION]...
 
 OPTIONS:
   -t, --theme     Background theme variant(s) [changli|jinxi|jiyan|yinlin|anke|weilinai|kakaluo|jianxin|qianxiao|cartethyia|younuo|aemeath|lynae|mornye] (default is changli)
-  -s, --screen    Screen display variant(s) [1080p|2k|4k] (default is 1080p)
+  -s, --screen    Screen display variant(s) [1080p|1920x1200|2k|4k] (default is 1080p)
 
   -h, --help      Show this help
 
@@ -210,12 +210,16 @@ while [[ $# -gt 0 ]]; do
             screens+=("${SCREEN_VARIANTS[0]}")
             shift
             ;;
-          2k)
+          1920x1200)
             screens+=("${SCREEN_VARIANTS[1]}")
             shift
             ;;
-          4k)
+          2k)
             screens+=("${SCREEN_VARIANTS[2]}")
+            shift
+            ;;
+          4k)
+            screens+=("${SCREEN_VARIANTS[3]}")
             shift
             ;;
           -*)

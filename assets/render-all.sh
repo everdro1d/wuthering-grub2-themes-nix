@@ -1,7 +1,7 @@
 #!/bin/bash
 
 VARIANTS=("icons" "other")
-RESOLUTIONS=("1080p" "2k" "4k")
+RESOLUTIONS=("1080p" "1920x1200" "2k" "4k")
 
 for variant in "${VARIANTS[@]}"; do
   for resolution in "${RESOLUTIONS[@]}"; do
